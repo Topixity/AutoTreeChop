@@ -8,8 +8,11 @@ softdepend: [ PlaceholderAPI, Residence, Lands, WorldGuard ]
 folia-supported: true
 
 permissions:
+  # Topixity: rang-kapu. Az upstream default 'true' volt, ami minden
+  # jatekosnak megadta az ATC-t es hatastalanitotta a LuckPerms
+  # 'autotreechop.use' node-ot. Nalunk a jog csak bronze-slice+ ranghoz jar.
   autotreechop.use:
-    default: true
+    default: op
   autotreechop.replant:
     default: true
   autotreechop.leaves:
