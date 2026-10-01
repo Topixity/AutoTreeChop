@@ -217,4 +217,21 @@ class SysMsgTest {
         assertNull(oldClientStyleAt(c, 3).clickEvent(), "az ikon a tartalom előtt áll, nem része a kattintható szövegnek");
         assertEquals(url, oldClientStyleAt(c, 8 + SysMsg.ICON_GAP + 1).clickEvent());
     }
+
+    @Test
+    void lista_tetel_pont_ikonja_halvany() {
+        Component c = SysMsg.format("{info:pont} /kit — kit választó", false);
+        boolean found = false;
+        for (Piece p : flatten(c)) {
+            if (p.text().contains(Icons.chat("pont"))) {
+                found = true;
+                assertEquals(SysMsg.DIM, p.style().color(), "a lista-tétel ikonja halvány");
+            }
+        }
+        assertTrue(found);
+        Component masik = SysMsg.format("{info:haz} Otthon", false);
+        for (Piece p : flatten(masik)) {
+            if (p.text().contains(Icons.chat("haz"))) assertEquals(SysMsg.Type.INFO.color, p.style().color());
+        }
+    }
 }

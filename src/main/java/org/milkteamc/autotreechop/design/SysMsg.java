@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
  *   '{var} Várj még {e}%sec% mp{/e}-et.'             → {/e} (vagy {n}) vissza a törzsszöveg színére
  *   '{!privat} {e}%sender%{/e} → te {sima}&8» &f%msg%' → kiemelt csík; a {sima} utáni rész NEM small caps
  *   '{info:haz} Otthon beállítva'                    → a típus színe, másik ikonnal
+ *   '{info:pont} /kit — kit választó'                → lista-tétel: a pont ikon HALVÁNY (több soros súgó / lista sorai)
  * </pre>
  *
  * <p>Típusok: {@code siker hiba var figyelem hasznalat be ki penz tp privat harc info}. A sablonban a régi színkódok
@@ -47,6 +48,10 @@ public final class SysMsg {
 
     /** A törzsszöveg színe (TXT2). */
     public static final TextColor BODY = TextColor.color(0xC0C2B8);
+    /** A halvány szín (TXT3): a lista-tétel ikonja. */
+    public static final TextColor DIM = TextColor.color(0x8A8C84);
+    /** A lista-tétel ikonja: {@code {info:pont} Tétel} — az ikon halvány, nem a típus színe. */
+    static final String LIST_ICON = "pont";
     /** A csík színe. */
     static final TextColor STRIP = TextColor.color(0x202020);
     /** Efölött nincs csík: a chat alapból 320 px széles, a csík nem törhet sort. */
@@ -157,7 +162,9 @@ public final class SysMsg {
     private static Component build(Type type, String iconName, Component text, Component plain, boolean highlight,
                                    boolean bedrock) {
         text = Icons.replace(text, Icons::chat, true);
-        Component icon = Component.text(Icons.chat(iconName)).font(GuiText.FONT_DEFAULT).color(type.color);
+        // a „pont" a lista-tétel jele: halványan megy (a tétel szövege és értéke a típus szerint marad)
+        TextColor iconColor = LIST_ICON.equals(iconName) ? DIM : type.color;
+        Component icon = Component.text(Icons.chat(iconName)).font(GuiText.FONT_DEFAULT).color(iconColor);
         if (bedrock) {
             Component out = Component.textOfChildren(icon, Component.text(" "), text);
             return noItalic(plain == null ? out : Component.textOfChildren(out, plain));
