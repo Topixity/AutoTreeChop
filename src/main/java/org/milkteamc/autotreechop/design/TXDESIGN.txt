@@ -1,0 +1,1 @@
+txdesign @ e8a8272 (2026-10-01) — kanonikus forrás: claude-brain/tools/txdesign/java; a másolatot ne szerkeszd, futtasd újra a sync.sh-t.

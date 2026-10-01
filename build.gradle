@@ -27,6 +27,8 @@ spotless {
     endWithNewline()
   }
   java {
+    // Topixity: the design package is a synced copy of claude-brain/tools/txdesign (not formatted here)
+    targetExclude 'src/main/java/org/milkteamc/autotreechop/design/**', 'src/test/java/org/milkteamc/autotreechop/design/**'
     removeUnusedImports()
     formatAnnotations()
     palantirJavaFormat()
@@ -90,6 +92,24 @@ dependencies {
     compileOnly 'com.github.angeschossen:LandsAPI:7.17.2'
     compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.9'
     compileOnly 'com.github.GriefPrevention:GriefPrevention:16.18.4'
+
+    // Topixity: unit tests (the txdesign module's tests are synced next to the module)
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events 'failed'
+    }
+    afterSuite { desc, result ->
+        if (!desc.parent) {
+            println "Tests run: ${result.testCount}, Failures: ${result.failedTestCount}, Skipped: ${result.skippedTestCount}"
+        }
+    }
 }
 
 compileJava {
@@ -98,7 +118,8 @@ compileJava {
     // options.compilerArgs += ["-Xlint:deprecation"]
 }
 
-def gitHash = 'unknown'
+// Topixity: -PgitHash=<hash> names the build when it runs outside a git checkout (rsync'd build dir)
+def gitHash = project.findProperty('gitHash') ?: 'unknown'
 def gitBranch = 'unknown'
 def gitMessage = 'No commit message available.'
 

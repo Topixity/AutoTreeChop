@@ -370,7 +370,8 @@ public class TranslationManager {
         Locale locale = getLocale(sender);
         String message = getMessage(key, locale);
 
-        Component component = formatter.format(message, resolvers);
+        // The one sending path: a translation with a type token ({siker}, {hiba} ...) is a design v3 system message
+        Component component = SystemMessages.format(formatter, sender, message, resolvers);
 
         if (component.equals(Component.empty())) {
             return; // Don't send empty messages
@@ -385,7 +386,7 @@ public class TranslationManager {
      */
     public Component formatMessage(CommandSender sender, String key, TagResolver... resolvers) {
         String message = getMessage(sender, key);
-        return formatter.format(message, resolvers);
+        return SystemMessages.format(formatter, sender, message, resolvers);
     }
 
     /**

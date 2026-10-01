@@ -154,7 +154,7 @@ public class AutoTreeChop extends JavaPlugin {
 
     private void setupTranslation() {
         this.translationManager = new TranslationManager(this);
-        String[] langs = {"styles", "en", "de", "es", "fr", "ja", "ru", "zh", "ms"};
+        String[] langs = {"styles", "en", "hu", "de", "es", "fr", "ja", "ru", "zh", "ms"};
         for (String lang : langs) {
             saveResourceIfNotExists("lang/" + lang + ".properties");
         }
