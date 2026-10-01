@@ -12,8 +12,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * A v3 tooltip (user 2026-10-01, „L2"): vanilla keret, szürke név (a kiválasztotté zöld pipával), alatta small caps
- * sorok — akció-sor: egér-ikon + színes szó + kis nyíl + akció.
+ * A v3 tooltip (user 2026-10-01, „L2"): vanilla keret, szürke small caps név (a kiválasztotté zöld pipával), alatta
+ * small caps sorok — akció-sor: egér-ikon + színes szó + kis nyíl + akció.
  *
  * <pre>
  * ✔ DeBuff                     ← Lore.name("DeBuff", true, bedrock)
@@ -70,11 +70,26 @@ public final class Lore {
         return GuiText.smallCaps(line);
     }
 
-    /** A név: sima betű, szürke; a kiválasztott / aktív elemé zöld, előtte pipa. */
+    /**
+     * A név: <b>small caps</b> (a user 2026-10-01 este: „itemnevek … small capsel legyen" — a kézben tartott item
+     * neve a hotbar fölött és a tooltip első sora is ez), szürke; a kiválasztott / aktív elemé zöld, előtte pipa.
+     * Bedrockon a saját font nem megy: ott sima betű.
+     */
     public static Component name(String plain, boolean selected, boolean bedrock) {
-        if (!selected) return noItalic(Component.text(plain, NamedTextColor.GRAY));
-        Component check = bedrock ? Component.text("✔") : GuiText.glyphTinted(CHECK);
-        return noItalic(Component.textOfChildren(check, Component.text(" " + plain)).color(SELECTED));
+        if (bedrock) {
+            return noItalic(selected ? Component.text("✔ " + plain, SELECTED) : Component.text(plain, NamedTextColor.GRAY));
+        }
+        if (!selected) return GuiText.smallCaps(Component.text(plain, NamedTextColor.GRAY));
+        return GuiText.smallCaps(Component.textOfChildren(GuiText.glyphTinted(CHECK), Component.text(" " + plain)).color(SELECTED));
+    }
+
+    /**
+     * Kész (saját színű) név-komponens small capsre: ritkaság-színes, átmenetes vagy több részből álló névhez.
+     * A színekhez nem nyúl; a szín nélküli rész szürke. Bedrockon sima betű.
+     */
+    public static Component name(Component name, boolean bedrock) {
+        Component c = name.colorIfAbsent(NamedTextColor.GRAY);
+        return bedrock ? noItalic(c) : GuiText.smallCaps(c);
     }
 
     /**

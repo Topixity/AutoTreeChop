@@ -2,6 +2,8 @@ package org.milkteamc.autotreechop.design;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import org.junit.jupiter.api.Test;
@@ -155,5 +157,64 @@ class SysMsgTest {
         Component c = SysMsg.of(SysMsg.Type.FIGYELEM, Component.text("Meghívó: ").append(Component.text("[Elfogad]")), false);
         assertEquals("Meghívó: [Elfogad]", SysMsg.visibleText(c).trim());
         assertEquals(2, c.children().size());
+    }
+
+    /**
+     * A régi kliens (1.21.8-ig) kattintás-keresése: a sor elejétől összeadja a jelek előtolását, és annál a jelnél
+     * áll meg, amelyik túllépi az x-et ({@code StringSplitter.componentStyleAtWidth}).
+     */
+    private static Style oldClientStyleAt(Component line, int x) {
+        float left = x;
+        for (Piece p : flatten(line)) {
+            boolean bold = p.style().decoration(net.kyori.adventure.text.format.TextDecoration.BOLD)
+                    == net.kyori.adventure.text.format.TextDecoration.State.TRUE;
+            for (int i = 0; i < p.text().length(); ) {
+                int cp = p.text().codePointAt(i);
+                i += Character.charCount(cp);
+                left -= FontWidths.text(new String(Character.toChars(cp)), p.style().font(), bold);
+                if (left < 0) return p.style();
+            }
+        }
+        return null;
+    }
+
+    @Test
+    void esemeny_nelkuli_sorban_nincs_talalati_sor() {
+        Component c = SysMsg.format("{siker} Mentve", false);
+        assertNull(SysMsg.hitPass(c));
+        for (Piece p : flatten(c)) assertNull(p.style().clickEvent());
+    }
+
+    @Test
+    void kattinthato_gomb_a_csik_alatt_regi_kliensen_is_talal() {
+        ClickEvent run = ClickEvent.runCommand("/duel accept");
+        Component body = Component.textOfChildren(Component.text("Kihívtak! "),
+                Component.text("Elfogad").clickEvent(run).hoverEvent(HoverEvent.showText(Component.text("Katt"))),
+                Component.text(" vagy vársz"));
+        Component c = SysMsg.of(SysMsg.Type.HARC, body, false);
+        int icon = 8 + SysMsg.ICON_GAP;
+        int before = icon + FontWidths.text("Kihívtak! ", GuiText.FONT_TSC, false);
+        int button = FontWidths.text("Elfogad", GuiText.FONT_TSC, false);
+        assertNull(oldClientStyleAt(c, 2).clickEvent(), "az ikon nem kattintható");
+        assertNull(oldClientStyleAt(c, before - 1).clickEvent(), "a gomb előtti szöveg nem kattintható");
+        assertEquals(run, oldClientStyleAt(c, before).clickEvent(), "a gomb első képpontja");
+        assertEquals(run, oldClientStyleAt(c, before + button - 1).clickEvent(), "a gomb utolsó képpontja");
+        assertNotNull(oldClientStyleAt(c, before + 3).hoverEvent(), "a hover is megvan");
+        assertNull(oldClientStyleAt(c, before + button).clickEvent(), "a gomb utáni szöveg nem kattintható");
+        // a találati sor nettó előtolása 0: a csík és a tartalom helye nem változik
+        assertEquals(FontWidths.width(SysMsg.of(SysMsg.Type.HARC, Component.text("Kihívtak! Elfogad vagy vársz"), false)),
+                FontWidths.width(c));
+        // a látható szövegen is ott az esemény (az új kliens a jel helye szerint keres)
+        boolean visible = false;
+        for (Piece p : flatten(c)) if (p.text().contains("Elfogad")) { visible = true; assertEquals(run, p.style().clickEvent()); }
+        assertTrue(visible);
+    }
+
+    @Test
+    void az_egesz_sor_kattinthato_ha_a_gyoker_esemenyes() {
+        ClickEvent url = ClickEvent.openUrl("https://topixity.hu");
+        Component c = SysMsg.of(SysMsg.Type.INFO, Component.text("Nyisd meg az oldalt").clickEvent(url), false);
+        assertNull(oldClientStyleAt(c, 3).clickEvent(), "az ikon a tartalom előtt áll, nem része a kattintható szövegnek");
+        assertEquals(url, oldClientStyleAt(c, 8 + SysMsg.ICON_GAP + 1).clickEvent());
     }
 }

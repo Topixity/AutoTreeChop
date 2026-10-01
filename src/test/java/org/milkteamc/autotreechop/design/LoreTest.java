@@ -37,13 +37,34 @@ class LoreTest {
     }
 
     @Test
-    void nev_szurke_a_kivalasztott_zold_pipaval() {
+    void nev_small_caps_szurke_a_kivalasztott_zold_pipaval() {
         Component n = Lore.name("Elytra", false, false);
         assertEquals("Elytra", plain(n));
         assertEquals(NamedTextColor.GRAY, n.color());
+        assertEquals(GuiText.FONT_TSC, n.style().font(), "az item-név small caps");
+        assertEquals(TextDecoration.State.FALSE, n.style().decoration(TextDecoration.ITALIC));
         Component s = Lore.name("DeBuff", true, false);
         assertEquals(Lore.CHECK + " DeBuff", plain(s));
         assertEquals(Lore.SELECTED, s.color());
+        assertEquals(GuiText.FONT_TSC, s.style().font());
+        assertEquals(GuiText.FONT_DEFAULT, s.children().get(0).style().font(), "a pipa a default font glyphje");
+    }
+
+    @Test
+    void nev_bedrockon_sima_betu() {
+        Component n = Lore.name("Elytra", false, true);
+        assertNull(n.style().font());
+        assertEquals("✔ DeBuff", plain(Lore.name("DeBuff", true, true)));
+    }
+
+    @Test
+    void kesz_nev_komponens_small_capsre_a_szinek_maradnak() {
+        Component szines = Component.text("Legendás kard", net.kyori.adventure.text.format.TextColor.color(0xFFAA00));
+        Component n = Lore.name(szines, false);
+        assertEquals(GuiText.FONT_TSC, n.style().font());
+        assertEquals(0xFFAA00, n.color().value());
+        assertEquals(NamedTextColor.GRAY, Lore.name(Component.text("Sima"), false).color());
+        assertNull(Lore.name(szines, true).style().font());
     }
 
     @Test
